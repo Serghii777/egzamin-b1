@@ -26,3 +26,38 @@ document.querySelectorAll('.faq-q').forEach(b=>b.addEventListener('click',()=>b.
 
   startDate.textContent = `${tomorrow.getDate()} ${months[tomorrow.getMonth()]} ${tomorrow.getFullYear()}`;
 })();
+
+
+// Meta Pixel: відстеження переходу до оплати тарифу 49 zł
+(() => {
+  const checkoutButtons = document.querySelectorAll(
+    'a[href*="iramelnyk91gmailcom.lms.softbook.app/shop/item/12999"]'
+  );
+
+  checkoutButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout', {
+          value: 49.00,
+          currency: 'PLN',
+          content_name: 'Екзамен B1 з підтримкою',
+          content_ids: ['12999'],
+          content_type: 'product'
+        });
+      }
+
+      // Для звичайного кліку даємо Pixel короткий час відправити подію
+      // перед переходом на сторінку оплати. Cmd/Ctrl-клік не затримуємо.
+      if (
+        event.defaultPrevented ||
+        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+      ) return;
+
+      event.preventDefault();
+      const checkoutUrl = button.href;
+      setTimeout(() => {
+        window.location.href = checkoutUrl;
+      }, 350);
+    });
+  });
+})();
