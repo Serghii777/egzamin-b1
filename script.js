@@ -1,63 +1,68 @@
-const audience=['хоче отримати державний сертифікат В1','не може підлаштуватись під розклад','не має можливості працювати з репетитором','говорить і пише хоча б на елементарному рівні','боїться екзамену й сумнівається у своїх силах','має труднощі з написанням творів'];
-const benefits=['7 змістовних занять','Лайфхаки для логічного оповідання','Розбір реального твору учениці','Шаблон оповідання зі словничком','Пробні тести та визначення готовності','Зареєструєтесь на екзамен','Підтримка вчителя','Аналіз готовності до частини Mówienie'];
-const lessons=[['Що треба вміти для екзамену В1?','Формат, вимоги та самостійна перевірка готовності.'],['Як відбувається екзамен?','Покроковий розбір процедури, реєстрації та тестів.'],['Słuchanie і czytanie','Тонкощі двох перших частин та способи покращити результат.'],['Gramatyka','Що справді треба знати й як виконувати завдання.'],['Як писати на екзамені?','Структура твору на прикладі оповідання.'],['Розбір твору учениці','Типові помилки та допустимі рішення.'],['Mówienie','Особливості усної частини та персональний аналіз завдання.']];
-const results=['Впевненість у готовності до екзамену','Правильно побудовані твори та ширший словниковий запас','Уміння вести розмову з екзаменаторами','Лайфхаки для різних типів екзаменаційних завдань'];
-const faqs=[['Скільки часу я матиму доступ?','Доступ до курсу надається на 1 місяць.'],['Коли почнеться навчання?','Одразу після оплати ви отримаєте доступ і зможете почати.'],['Коли відбуваються заняття?','Усі уроки записані, тому ви навчаєтесь у зручний час.'],['Чи можна поставити запитання?','Так, у вас буде індивідуальний чат із куратором.']];
-const fill=(id,arr,fn)=>document.getElementById(id).innerHTML=arr.map(fn).join('');
-fill('audience',audience,(x)=>`<article class="card"><div class="icon">✓</div><b>Для тих, хто ${x}</b></article>`);
-fill('benefits',benefits,(x)=>`<article class="benefit"><div class="icon">✦</div><b>${x}</b></article>`);
-fill('program',lessons,(x,i)=>`<article class="lesson"><h3>${i+1}. ${x[0]}</h3><p>${x[1]}</p></article>`);
-fill('results',results,(x)=>`<article class="result"><div class="icon">◎</div><b>${x}</b></article>`);
-fill('faq',faqs,(x)=>`<div class="faq-item"><button class="faq-q">${x[0]}<span>＋</span></button><div class="faq-a">${x[1]}</div></div>`);
-document.querySelectorAll('.faq-q').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));
+const BUY_URL = 'https://iramelnyk91gmailcom.lms.softbook.app/shop/item/12999';
 
-// Щодня показує завтрашню дату у форматі: 23 липня 2026
+// Tomorrow's date – changes automatically every day.
 (() => {
-  const startDate = document.getElementById('startDate');
-  if (!startDate) return;
-
-  const months = [
-    'січня','лютого','березня','квітня','травня','червня',
-    'липня','серпня','вересня','жовтня','листопада','грудня'
-  ];
-
+  const months = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-
-  startDate.textContent = `${tomorrow.getDate()} ${months[tomorrow.getMonth()]} ${tomorrow.getFullYear()}`;
+  const value = `${tomorrow.getDate()} ${months[tomorrow.getMonth()]}`;
+  document.querySelectorAll('[data-tomorrow]').forEach(el => el.textContent = value);
 })();
 
-
-// Meta Pixel: відстеження переходу до оплати тарифу 49 zł
+// One-hour countdown shared between all timer blocks.
 (() => {
-  const checkoutButtons = document.querySelectorAll(
-    'a[href*="iramelnyk91gmailcom.lms.softbook.app/shop/item/12999"]'
-  );
+  const KEY = 'b1_sale_deadline_49';
+  let deadline = Number(sessionStorage.getItem(KEY));
+  if (!deadline || deadline <= Date.now()) {
+    deadline = Date.now() + 60 * 60 * 1000;
+    sessionStorage.setItem(KEY, String(deadline));
+  }
 
-  checkoutButtons.forEach((button) => {
-    button.addEventListener('click', (event) => {
-      if (typeof fbq === 'function') {
-        fbq('track', 'InitiateCheckout', {
-          value: 49.00,
-          currency: 'PLN',
-          content_name: 'Екзамен B1 з підтримкою',
-          content_ids: ['12999'],
-          content_type: 'product'
-        });
-      }
-
-      // Для звичайного кліку даємо Pixel короткий час відправити подію
-      // перед переходом на сторінку оплати. Cmd/Ctrl-клік не затримуємо.
-      if (
-        event.defaultPrevented ||
-        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
-      ) return;
-
-      event.preventDefault();
-      const checkoutUrl = button.href;
-      setTimeout(() => {
-        window.location.href = checkoutUrl;
-      }, 350);
-    });
-  });
+  const pad = n => String(n).padStart(2, '0');
+  function render() {
+    let diff = Math.max(0, deadline - Date.now());
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.querySelectorAll('[data-hours]').forEach(el => el.textContent = pad(h));
+    document.querySelectorAll('[data-minutes]').forEach(el => el.textContent = pad(m));
+    document.querySelectorAll('[data-seconds]').forEach(el => el.textContent = pad(s));
+  }
+  render();
+  setInterval(render, 250);
 })();
+
+// Program accordion.
+const programToggle = document.getElementById('programToggle');
+const programList = document.getElementById('programList');
+if (programToggle && programList) {
+  programToggle.addEventListener('click', () => {
+    const open = programList.classList.toggle('is-open');
+    programList.setAttribute('aria-hidden', open ? 'false' : 'true');
+    programToggle.textContent = open ? 'згорнути ↑' : 'детальніше ↓';
+    programToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+
+// Review carousel arrows.
+const track = document.getElementById('reviewsTrack');
+if (track) {
+  const amount = () => Math.min(track.clientWidth * 0.85, 430);
+  document.querySelector('.carousel-arrow.next')?.addEventListener('click', () => track.scrollBy({left: amount(), behavior:'smooth'}));
+  document.querySelector('.carousel-arrow.prev')?.addEventListener('click', () => track.scrollBy({left: -amount(), behavior:'smooth'}));
+}
+
+// Meta InitiateCheckout before leaving for Softbook.
+document.querySelectorAll('.purchase-link').forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault();
+    if (typeof fbq === 'function') {
+      fbq('track', 'InitiateCheckout', {
+        value: 49.00,
+        currency: 'PLN',
+        content_name: 'Інтенсив B1 — 7 днів'
+      });
+    }
+    setTimeout(() => { window.location.href = BUY_URL; }, 350);
+  });
+});
